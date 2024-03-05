@@ -1,6 +1,7 @@
 
 # Implementation Documentation for Task 1 of IPP 2023/2024
 **Name and Surname:** Dmytro Trifonov
+
 **Login:** xtrifo00
 
 ## Introduction
