@@ -21,8 +21,7 @@ The script emphasizes modularity, robust error handling, and efficient parsing. 
 
 ## Class Diagram
 
-![Class Diagram]([https://www.mermaidchart.com/raw/a3012c7c-990d-45fc-850c-e47d76e7742a?theme=dark&version=v0.1&format=svg](https://www.mermaidchart.com/raw/a3012c7c-990d-45fc-850c-e47d76e7742a?theme=dark&version=v0.1&format=svg))
-
+![Class Diagram](https://www.mermaidchart.com/raw/a3012c7c-990d-45fc-850c-e47d76e7742a?theme=dark&version=v0.1&format=svg)
 
 ### InputProcessor
 Cleans input lines, ensuring correct formatting and header presence.
