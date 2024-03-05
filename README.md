@@ -37,9 +37,6 @@ Facilitates parsing and validation of instruction arguments based on type and va
 
 ## Error Handling
 Implements detailed error reporting for various failure scenarios, exiting with appropriate codes:
-- 21: Incorrect or missing header.
-- 22: Unknown or invalid opcode.
-- 23: Other lexical or syntactic errors.
 
 ## Testing and Extensibility
 The script's structure allows for straightforward unit testing and extensibility, accommodating future IPPcode24 modifications with minimal changes.
