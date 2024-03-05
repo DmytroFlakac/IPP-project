@@ -19,24 +19,35 @@ Error codes:
     22 - unknown or wrong opcode in the source code written in IPPcode24,
     23 - other lexical or syntactic error in the source code written in IPPcode24.""")
 
-def input_processing(input_data):
-    if not input_data.strip():
-        sys.stderr.write("Error: Empty input!\n")
-        sys.exit(21)     
-    lines = input_data.split("\n")
-    cleaned_lines = []
-    for line in lines:
-        line = re.sub(r'\s+', ' ', line)
-        line = re.sub(r'#.*', '', line)
-        line = line.strip()
-        if line:
-            cleaned_lines.append(line)
-    lines = cleaned_lines
-    if lines[0] != ".IPPcode24":
-        sys.stderr.write("Error: Invalid header!\n")
-        sys.exit(21)   
-    lines = lines[1:] 
-    return lines 
+class InputProcessor:
+    def __init__(self, header=".IPPcode24"):
+        self.header = header
+
+    def process_input(self, input_data):
+        if not input_data.strip():
+            sys.stderr.write("Error: Empty input!\n")
+            sys.exit(21)
+        
+        lines = input_data.split("\n")
+        cleaned_lines = self._clean_lines(lines)
+
+        if cleaned_lines[0] != self.header:
+            sys.stderr.write("Error: Invalid header!\n")
+            sys.exit(21)
+
+        # Remove header line
+        processed_lines = cleaned_lines[1:]
+        return processed_lines
+
+    def _clean_lines(self, lines):
+        cleaned_lines = []
+        for line in lines:
+            line = re.sub(r'\s+', ' ', line)  # Replace multiple spaces with one
+            line = re.sub(r'#.*', '', line)   # Remove comments
+            line = line.strip()               # Remove leading/trailing whitespaces
+            if line:
+                cleaned_lines.append(line)
+        return cleaned_lines
 class Instruction:
     def __init__(self, opcode, order):
         self.opcode = opcode
@@ -117,7 +128,7 @@ class Parser:
             (3, "label", "symb", "symb"): ["JUMPIFEQ", "JUMPIFNEQ"]
         }
 
-    def parse(self, lines, program_element):
+    def parse(self, lines, Xml):
         for line in lines:
             parts = line.split()
             if parts:  # Check if the line is not empty after splitting
@@ -130,10 +141,10 @@ class Parser:
                 for arg in args:
                     instruction.add_arg(arg)
                 self.instructions.append(instruction)
-                self.parse_instruction(instruction, program_element)      
+                self.parse_instruction(instruction, Xml)      
                  
     
-    def parse_instruction(self, instruction: Instruction, program_element):
+    def parse_instruction(self, instruction: Instruction, Xml):
         keys_associated = []
         args = instruction.args
         in_dict = False
@@ -148,19 +159,14 @@ class Parser:
             if len(args) != expected_args:
                 sys.stderr.write(f"Error: Incorrect number of arguments for opcode {instruction.opcode}\n")
                 sys.exit(23) 
-            self.add_instruction_xml(instruction, program_element, keys_associated)         
+            self.parse_args(instruction, Xml, keys_associated)         
         else:
             sys.stderr.write(f"Error: Unknown opcode {instruction.opcode}\n")
             sys.exit(22)
         return keys_associated       
-
-    def header_xml(self):
-        program_element = ET.Element("program")
-        program_element.set("language", "IPPcode24")
-        return program_element
     
-    def add_instruction_xml(self, instruction, program_element, arguments):
-        instruction_element = ET.SubElement(program_element, "instruction", order=str(instruction.order), opcode=instruction.opcode)
+    def parse_args(self, instruction, Xml, arguments):
+        instruction_element = Xml.add_instruction_xml(instruction, Xml.program_element)
         
         for i, arg in enumerate(instruction.args, start=1):
             arg_obj = Argument(arg)
@@ -179,11 +185,30 @@ class Parser:
             elif expected_arg_type == "label":
                 arg_obj.check_arg("label", arg)
             elif expected_arg_type == "type":
-                arg_obj.check_arg("type", arg)
-            
-            arg_element = ET.SubElement(instruction_element, f"arg{i}", type=arg_type)
-            arg_element.text = arg_text    
+                arg_obj.check_arg("type", arg)  
+                
+            Xml.add_argument_xml(instruction_element, arg_type, arg_text, i)
+    
+class XML:
+    def __init__(self):
+        self.program_element = None
+        
+    def header_xml(self):
+        program_element = ET.Element("program")
+        program_element.set("language", "IPPcode24")
         return program_element
+    
+    def add_instruction_xml(self, instruction, program_element):
+        return ET.SubElement(program_element, "instruction", order=str(instruction.order), opcode=instruction.opcode)
+        
+    def add_argument_xml(self, instruction_element, arg_type, arg_text, i):
+        arg_element = ET.SubElement(instruction_element, f"arg{i}", type=arg_type)
+        arg_element.text = arg_text 
+        
+    def print_configured_xml(self,Xml):
+        xml_str = ET.tostring(Xml.program_element, encoding="UTF-8")
+        xml_str = xml.dom.minidom.parseString(xml_str).toprettyxml(indent="    ", encoding="UTF-8").decode()
+        sys.stdout.write(xml_str)
 
 def main():
     input_data = sys.argv[1]
@@ -194,14 +219,13 @@ def main():
         print(f"Error: File '{input_data}' not found.")
         sys.exit(11)
     # input_data = sys.stdin.read()
-    lines = input_processing(input_data)       
+    processor = InputProcessor()
+    lines = processor.process_input(input_data)      
     parser = Parser()
-    program_element = parser.header_xml()
-    parser.parse(lines, program_element)
-    xml_str = ET.tostring(program_element, encoding="UTF-8")
-    xml_str = xml.dom.minidom.parseString(xml_str).toprettyxml(indent="    ", encoding="UTF-8").decode()
-
-    sys.stdout.write(xml_str)
+    Xml = XML()
+    Xml.program_element = Xml.header_xml()
+    parser.parse(lines, Xml)
+    Xml.print_configured_xml(Xml)
 
 if __name__ == "__main__":
     
