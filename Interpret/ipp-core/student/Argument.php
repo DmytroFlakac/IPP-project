@@ -30,4 +30,27 @@ class Argument
     {
         return $this->type;
     }
+
+    public function decodeEscapeSequences($str) {
+        // First, replace common escape sequences
+        $replacements = [
+            '\\n' => "\n", // New line
+            '\\r' => "\r", // Carriage return
+            '\\t' => "\t", // Tab
+            '\\\\' => "\\", // Backslash
+            // Add more common escape sequences as needed
+        ];
+
+        foreach ($replacements as $search => $replace) {
+            $str = str_replace($search, $replace, $str);
+        }
+
+        // Then, handle the numeric escape sequences \xyz
+        $str = preg_replace_callback('/\\\\([0-9]{3})/', function($matches) {
+            // Convert the decimal number to a character
+            return chr((int)$matches[1]);
+        }, $str);
+
+        return $str;
+    }
 }
