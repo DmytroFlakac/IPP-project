@@ -18,11 +18,16 @@ class Instruction
 
     public function addArgument($type, $value): void
     {
-        $argument = new Argument($type, $value);
+        $argument = new Argument();
         if ($type === "var") {
             $parts = explode("@", $value);
             $argument->frame = $parts[0];
+            $argument->name = $parts[1];
         }
+        else{
+            $argument->value = $value;
+        }
+        $argument->type = $type;
         $this->args[] = $argument;
     }
 

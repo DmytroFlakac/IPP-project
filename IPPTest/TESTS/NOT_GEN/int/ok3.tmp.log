@@ -1,8 +1,0 @@
-[Fatal Error] ok3.tmp:1:1:Premature end of file.
-org.xml.sax.SAXParseException; systemId: file:///C:/Users/lukas/Desktop/GitRepos/IPP/TESTS/NOT_GEN/int/ok3.tmp; lineNumber: 1; columnNumber: 1; Premature end of file.
-	at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(Unknown Source)
-	at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(Unknown Source)
-	at com.a7soft.examxml.ExamXMLHandler.loadXML(ExamXMLHandler.java:111)
-	at com.a7soft.examxml.ExamXML.loadXML(ExamXML.java:246)
-	at com.a7soft.examxml.ExamXML.compare(ExamXML.java:213)
-	at com.a7soft.examxml.ExamXML.main(ExamXML.java:383)

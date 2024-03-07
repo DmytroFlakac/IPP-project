@@ -1,6 +1,0 @@
-TODO.txt
-*.zip
-# ignore Visual Code files
-.vscode
-# ignore IPPcode19 files (auxiliary once, not *.src)
-# *.ippcode

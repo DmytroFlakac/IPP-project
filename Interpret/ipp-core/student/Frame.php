@@ -11,11 +11,14 @@ class Frame
         $this->variables = [];
     }
 
-    public function addVariable($name, $value): void
+    public function addVariable($name): void
     {
-        $this->variables[$name] = $value;
+        if (!array_key_exists($name, $this->variables)) {
+            $this->variables[$name] = null;
+        } else {
+            ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Duplicate variable found.");
+        }
     }
-
     public function getVariable($name)
     {
         if (array_key_exists($name, $this->variables)) {

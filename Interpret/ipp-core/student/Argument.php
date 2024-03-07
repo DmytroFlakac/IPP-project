@@ -5,13 +5,16 @@ namespace IPP\Student;
 class Argument
 {
     public $type;
-    public $frame = null;
+    public $frame;
+    public $name;
     public $value;
 
-    public function __construct($type, $value)
+    public function __construct()
     {
-        $this->type = $type;
-        $this->value = $value;
+        $this->type = null;
+        $this->value = null;
+        $this->frame = null;
+        $this->name = null;
     }
     public function checkType($type): void
     {

@@ -16,7 +16,7 @@ class Interpreter extends AbstractInterpreter
         $instructions = $XmLValidator->validate();
         $labels = Interpreter::findAllLabels($instructions);
         $frameManager = new FrameManager();
-
+        Interpreter::executeInstruction($instructions, $frameManager, $labels);
 
         return 0;
     }
