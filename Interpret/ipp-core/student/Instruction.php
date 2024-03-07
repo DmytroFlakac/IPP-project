@@ -25,12 +25,16 @@ class Instruction
             $argument->frame = $parts[0];
             $argument->name = $parts[1];
         }
-        else{
-            if($type === "string")
-                $value = $argument->decodeEscapeSequences($value);
-            $argument->value = $value;
-        }
+        elseif($type === "string")
+            $value = $argument->decodeStringArgument($value);
+        elseif ($type === "int")
+            $value = (int)$value;
+        elseif ($type === "bool")
+            $value = $value === "true";
+        elseif ($type === "nil")
+            $value = null;
 
+        $argument->value = $value;
         $this->args[] = $argument;
     }
 

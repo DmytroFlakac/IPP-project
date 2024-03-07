@@ -31,7 +31,7 @@ class Argument
         return $this->type;
     }
 
-    public function decodeEscapeSequences($str) {
+    public function decodeStringArgument($str) {
         // First, replace common escape sequences
         $replacements = [
             '\\n' => "\n", // New line

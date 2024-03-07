@@ -2,9 +2,33 @@
 
 namespace IPP\Student;
 
+/**
+ * Trait to define a Variable
+ */
+trait Variable
+{
+    public $type;
+    public $value;
+    function __construct()
+    {
+        $this->type = null;
+        $this->value = null;
+    }
+}
+
+/**
+ * Class Frame
+ *
+ * @property Variable[] $variables Array of variables of type Variable
+ */
 class Frame
 {
-    public array $variables = [];
+    use Variable;
+
+    /**
+     * @var Variable[] Array to hold variables of type Variable
+     */
+    public $variables;
 
     public function __construct()
     {
@@ -14,7 +38,8 @@ class Frame
     public function addVariable($name): void
     {
         if (!array_key_exists($name, $this->variables)) {
-            $this->variables[$name] = null;
+            // Note: You need to instantiate a new Variable object here
+            $this->variables[$name] = new class { use Variable; };
         } else {
             ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Duplicate variable found.");
         }
@@ -24,16 +49,16 @@ class Frame
         if (array_key_exists($name, $this->variables)) {
             return $this->variables[$name];
         }
-        ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_ACCESS_UNDEFINED_VARIABLE, "Nedefinovaná premenná");
+        ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_ACCESS_UNDEFINED_VARIABLE, "Undefined variable.");
     }
 
-    public function setVariable($name, $value): void
+    public function setVariable($name, $value, $type): void
     {
         if (array_key_exists($name, $this->variables)) {
-            $this->variables[$name] = $value;
+            $this->variables[$name]->value = $value;
+            $this->variables[$name]->type = $type;
         } else {
-            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_ACCESS_UNDEFINED_VARIABLE, "Nedefinovaná premenná");
+            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_ACCESS_UNDEFINED_VARIABLE, "Undefined variable.");
         }
     }
 }
-

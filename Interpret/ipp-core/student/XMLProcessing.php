@@ -4,12 +4,12 @@ namespace IPP\Student;
 
 class XMLProcessing
 {
-    private $source;
-    private $encoding;
-    private $xmlVersion;
+    private \DOMElement $source;
+    private string $encoding;
+    private string $xmlVersion;
     private \DOMXPath $xpath;
 
-    function __construct($dom)
+    function __construct(\DOMDocument $dom)
     {
         $this->source = $dom->documentElement;
         $this->xpath = new \DOMXPath($dom);

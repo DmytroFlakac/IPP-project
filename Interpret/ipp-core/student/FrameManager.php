@@ -10,7 +10,7 @@ class FrameManager
 
     function __construct()
     {
-        $this->globalFrame = new GF();
+        $this->globalFrame = new Frame();
         $this->localFrames[] = null;
         $this->temporaryFrame = null;
     }
@@ -22,7 +22,7 @@ class FrameManager
 
     public function createTemporaryFrame(): void
     {
-        $this->temporaryFrame = new TF();
+        $this->temporaryFrame = new Frame();
     }
 
     public function addVariable2Frame($frame, $name): void
@@ -59,18 +59,18 @@ class FrameManager
         }
     }
 
-    public function setVariable2Frame($frame, $name, $value): void
+    public function setVariable2Frame($frame, $name, $value, $type): void
     {
         if ($frame === "GF") {
-            $this->globalFrame->setVariable($name, $value);
+            $this->globalFrame->setVariable($name, $value, $type);
         } else if ($frame === "LF") {
             if($this->localFrames === null)
                 ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
-            $this->localFrames[count($this->localFrames) - 1]->setVariable($name, $value);
+            $this->localFrames[count($this->localFrames) - 1]->setVariable($name, $value, $type);
         } else if ($frame === "TF") {
             if($this->temporaryFrame === null)
                 ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
-            $this->temporaryFrame->setVariable($name, $value);
+            $this->temporaryFrame->setVariable($name, $value, $type);
         } else {
             ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Invalid frame.");
         }
@@ -78,7 +78,7 @@ class FrameManager
     public function pushTemporaryFrame(): void
     {
         if($this->localFrames === null)
-            $this->localFrames[] = new LF();
+            $this->localFrames[] = new Frame();
         if ($this->temporaryFrame !== null) {
             $this->localFrames[] = $this->temporaryFrame;
             $this->temporaryFrame = null;
@@ -98,26 +98,26 @@ class FrameManager
 }
 
 
-class GF extends Frame
-{
-    public function __construct()
-    {
-        parent::__construct();
-    }
-}
-
-class LF extends Frame
-{
-    public function __construct()
-    {
-        parent::__construct();
-    }
-}
-
-class TF extends Frame
-{
-    public function __construct()
-    {
-        parent::__construct();
-    }
-}
+//class GF extends Frame
+//{
+//    public function __construct()
+//    {
+//        parent::__construct();
+//    }
+//}
+//
+//class LF extends Frame
+//{
+//    public function __construct()
+//    {
+//        parent::__construct();
+//    }
+//}
+//
+//class TF extends Frame
+//{
+//    public function __construct()
+//    {
+//        parent::__construct();
+//    }
+//}
