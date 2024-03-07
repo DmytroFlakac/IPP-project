@@ -38,9 +38,3 @@ Facilitates parsing and validation of instruction arguments based on type and va
 
 ## Error Handling
 Implements detailed error reporting for various failure scenarios, exiting with appropriate codes:
-
-## Testing and Extensibility
-The script's structure allows for straightforward unit testing and extensibility, accommodating future IPPcode24 modifications with minimal changes.
-
-## Conclusion
-`parse.py` is designed for clarity, maintainability, and adherence to IPPcode24 specifications, providing a robust solution for parsing and XML representation tasks.
