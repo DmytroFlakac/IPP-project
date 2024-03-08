@@ -27,13 +27,15 @@ trait Program
                     $frameManager->addVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name);
                     break;
                 case 'MOVE':
-                    $value = null;
                     if ($instruction->args[1]->type === "var") {
-                        $value = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name)->value;
+                        $var = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
+                        $value = $var->value;
+                        $type = $var->type;
                     } else {
                         $value = $instruction->args[1]->value;
+                        $type = $instruction->args[1]->type;
                     }
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $value, $instruction->args[0]->type);
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $value, $type);
                     break;
 
                 case 'CREATEFRAME':
@@ -100,10 +102,18 @@ trait Program
                     break;
                 case 'WRITE':
                     if ($instruction->args[0]->type === "var") {
-                        $value = $frameManager->getFrameVariable($instruction->args[0]->frame, $instruction->args[0]->name)->value;
+                        $var = $frameManager->getFrameVariable($instruction->args[0]->frame, $instruction->args[0]->name);
+                        $value = $var->value;
+                        $type = $var->type;
                     } else {
                         $value = $instruction->args[0]->value;
+                        $type = $instruction->args[0]->type;
                     }
+
+                    if ($type === "nil")
+                        $value = "";
+                    elseif ($type === "bool")
+                        $value = $value ? "true" : "false";
                     $stdout->writeString($value);
                     break;
                 case 'CONCAT':

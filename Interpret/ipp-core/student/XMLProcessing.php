@@ -22,7 +22,7 @@ class XMLProcessing
         if ($this->encoding !== 'UTF-8' || $this->xmlVersion !== '1.0') {
             ErrorHandler::ErrorMessage(ErrorHandler::XML_FORMAT_ERROR, "Incorrect XML format.");
         }
-        if ($this->source->getAttribute('language') !== 'IPPcode24' || $this->source->nodeName !== 'program') {
+        if ($this->source->getAttribute('language') !== 'IPPcode23' || $this->source->nodeName !== 'program') {
             ErrorHandler::ErrorMessage(ErrorHandler::XML_FORMAT_ERROR, "Incorrect XML format.");
         }
 
@@ -36,10 +36,10 @@ class XMLProcessing
 
         foreach ($instructionNodes as $instNode) {
             $order = intval($instNode->getAttribute('order'));
-            if ($order !== $lastOrder + 1) {
-                ErrorHandler::ErrorMessage(ErrorHandler::XML_UNEXPECTED_STRUCTURE, "Instruction order is not sequential.");
-            }
-            $lastOrder = $order;
+//            if ($order !== $lastOrder + 1) {
+//                ErrorHandler::ErrorMessage(ErrorHandler::XML_UNEXPECTED_STRUCTURE, "Instruction order is not sequential.");
+//            }
+//            $lastOrder = $order;
 
             $opcode = strtoupper($instNode->getAttribute('opcode'));
             $instruction = new Instruction($opcode, $order);

@@ -7,11 +7,11 @@ namespace IPP\Student;
  */
 trait Variable
 {
-    public $type;
+    public string $type;
     public $value;
     function __construct()
     {
-        $this->type = null;
+        $this->type = "undefined";
         $this->value = null;
     }
 }
