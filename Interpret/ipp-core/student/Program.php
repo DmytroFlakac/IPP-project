@@ -239,7 +239,7 @@ trait Program
                     $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1 * $symb2, "int");
                     break;
                 case 'IDIV':
-$symb1 = null;
+                    $symb1 = null;
                     $symb2 = null;
                     if ($instruction->args[1]->type === "var") {
                         $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name)->value;

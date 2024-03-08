@@ -45,4 +45,17 @@
     <instruction order="13" opcode="WRITE">
         <arg1 type="var">GF@len</arg1>
     </instruction>
+    <instruction order="14" opcode="WRITE">
+        <arg1 type="string">\010</arg1>
+    </instruction>
+    <instruction order="15" opcode="DEFVAR">
+        <arg1 type="var">GF@read</arg1>
+    </instruction>
+    i<instruction order="16" opcode="READ">
+    <arg1 type="var">GF@read</arg1>
+    <arg2 type="type">int</arg2>
+</instruction>
+    <instruction order="17" opcode="WRITE">
+        <arg1 type="var">GF@read</arg1>
+    </instruction>
 </program>
