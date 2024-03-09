@@ -19,7 +19,7 @@ class Argument
     public function checkType($type): void
     {
         if ($this->type !== $type) {
-            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Nesprávny typ argumentu");
+            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Nesprávny typ argumentu",-1);
         }
     }
     public function getValue()

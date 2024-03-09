@@ -17,9 +17,9 @@ class ErrorHandler
     const XML_UNEXPECTED_STRUCTURE = 32;
     const INTEGRATION_ERROR = 88;
 
-    #[NoReturn] public static function ErrorMessage(int $code, string $message): void
+    #[NoReturn] public static function ErrorMessage(int $code, string $message, int $order): void
     {
-        fwrite(STDERR, $message . PHP_EOL);
+        fwrite(STDERR, $message .  ": line-> $order" . PHP_EOL);
         exit($code);
     }
 }

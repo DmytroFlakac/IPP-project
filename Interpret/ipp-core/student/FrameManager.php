@@ -5,13 +5,13 @@ namespace IPP\Student;
 class FrameManager
 {
     public $globalFrame;
-    private $localFrames;
-    private $temporaryFrame;
+    public array $localFrames;
+    public $temporaryFrame;
 
     function __construct()
     {
         $this->globalFrame = new Frame();
-        $this->localFrames[] = null;
+        $this->localFrames = [];
         $this->temporaryFrame = null;
     }
 
@@ -31,14 +31,14 @@ class FrameManager
             $this->globalFrame->addVariable($name);
         } else if ($frame === "LF") {
             if($this->localFrames === null)
-                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
+                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec", -1);
             $this->localFrames[count($this->localFrames) - 1]->addVariable($name);
         } else if ($frame === "TF") {
             if($this->temporaryFrame === null)
-                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
+                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec", -1);
             $this->temporaryFrame->addVariable($name);
         } else {
-            ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Invalid frame.");
+            ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Invalid frame.", -1);
         }
     }
 
@@ -48,14 +48,14 @@ class FrameManager
             return $this->globalFrame->getVariable($name);
         } else if ($frame === "LF") {
             if($this->localFrames === null)
-                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
+                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec", -1);
             return $this->localFrames[count($this->localFrames) - 1]->getVariable($name);
         } else if ($frame === "TF") {
             if($this->temporaryFrame === null)
-                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
+                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec", -1);
             return $this->temporaryFrame->getVariable($name);
         } else {
-            ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Invalid frame.");
+            ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Invalid frame.", -1);
         }
     }
 
@@ -65,14 +65,14 @@ class FrameManager
             $this->globalFrame->setVariable($name, $value, $type);
         } else if ($frame === "LF") {
             if($this->localFrames === null)
-                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
+                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec", -1);
             $this->localFrames[count($this->localFrames) - 1]->setVariable($name, $value, $type);
         } else if ($frame === "TF") {
             if($this->temporaryFrame === null)
-                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
+                ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec", -1);
             $this->temporaryFrame->setVariable($name, $value, $type);
         } else {
-            ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Invalid frame.");
+            ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Invalid frame.", -1);
         }
     }
     public function pushTemporaryFrame(): void
@@ -83,17 +83,17 @@ class FrameManager
             $this->localFrames[] = $this->temporaryFrame;
             $this->temporaryFrame = null;
         } else
-            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
+            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec", -1);
     }
 
     public function popTemporaryFrame(): void
     {
-        if ($this->localFrames !== null) {
+        if (!empty($this->localFrames)) {
             $this->temporaryFrame = array_pop($this->localFrames);
             if (empty($this->localFrames))
-                $this->localFrames = null;
+                $this->localFrames = [];
         } else
-            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec");
+            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_NONEXISTENT_FRAME, "Nedefinovaný rámec", -1);
     }
 }
 
