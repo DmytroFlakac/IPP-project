@@ -18,6 +18,7 @@ trait Program
         }
         return $labels;
     }
+
     public static function executeInstructions($instructions, $frameManager, $labels, $stdout, $stdin): void
     {
         $variableStack = new Stack();
@@ -29,18 +30,9 @@ trait Program
                     $frameManager->addVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name);
                     break;
                 case 'MOVE':
-                    if ($instruction->args[1]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $value = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $value = $instruction->args[1]->value;
-                        $type = $instruction->args[1]->type;
-                    }
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $value, $type);
-
+                    $arg = Argument::getArgData($instruction->args[1], $frameManager);
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg->value, $arg->type);
                     break;
-
                 case 'CREATEFRAME':
                     $frameManager->createTemporaryFrame();
                     break;
@@ -68,103 +60,50 @@ trait Program
                     $i = $labels[$instruction->args[0]->value];
                     break;
                 case 'JUMPIFEQ':
-                    if(!array_key_exists($instruction->args[0]->value, $labels)){
+                    if(!array_key_exists($instruction->args[0]->value, $labels))
                         ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Undefined label.", $instruction->order);
-                    }
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== $symb2Type) {
-                        if ($symb1Type === "nil" || $symb2Type === "nil")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== $arg2->type) {
+                        if ($arg1->type === "nil" || $arg2->type === "nil")
                             $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, "false", "bool");
                         else
                             ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
                     }
-                    if ($symb1Value === $symb2Value) {
+                    if ($arg1->value === $arg2->value)
                         $i = $labels[$instruction->args[0]->value];
-                    }
+
                     break;
                 case 'JUMPIFNEQ':
-                    if(!array_key_exists($instruction->args[0]->value, $labels)){
+                    if(!array_key_exists($instruction->args[0]->value, $labels))
                         ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Undefined label.", $instruction->order);
-                    }
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== $symb2Type) {
-                        if ($symb1Type === "nil" || $symb2Type === "nil")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== $arg2->type) {
+                        if ($arg1->type === "nil" || $arg2->type === "nil")
                             $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, "false", "bool");
                         else
                             ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
                     }
-                    if ($symb1Value !== $symb2Value) {
+                    if ($arg1->value !== $arg2->value)
                         $i = $labels[$instruction->args[0]->value];
-                    }
                     break;
                 case 'WRITE':
-                    if ($instruction->args[0]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[0]->frame, $instruction->args[0]->name);
-                        $value = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $value = $instruction->args[0]->value;
-                        $type = $instruction->args[0]->type;
-                    }
-
-                    if ($type === "nil")
-                        $value = "";
-                    elseif ($type === "bool")
-                        $value = $value ? "true" : "false";
-                    if($value === null)
+                    $arg = Argument::getArgData($instruction->args[0], $frameManager);
+                    if ($arg->type === "nil")
+                        $arg->value = "";
+                    elseif ($arg->type === "bool")
+                        $arg->value = $arg->value ? "true" : "false";
+                    if($arg->value === null)
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_MISSING_VALUE, "Missing value.", $instruction->order);
-                    $stdout->writeString($value);
+                    $stdout->writeString($arg->value);
                     break;
                 case 'CONCAT':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== "string" || $symb2Type !== "string")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== "string" || $arg2->type !== "string")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value . $symb2Value, "string");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value . $arg2->value, "string");
                     break;
                 case 'READ':
                     $value = $stdin->readString();
@@ -189,342 +128,142 @@ trait Program
                         $value = null;
                     elseif ($type === "string")
                         $value = (string)$value;
-
                     $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $value, $type);
                     break;
                 case 'STRLEN':
-                    if ($instruction->args[1]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $value = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $value = $instruction->args[1]->value;
-                        $type = $instruction->args[1]->type;
-                    }
-                    if($type !== "string")
+                    $arg = Argument::getArgData($instruction->args[1], $frameManager);
+                    if($arg->type !== "string")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, strlen($value), "int");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, strlen($arg->value), "int");
                     break;
                 case 'INT2CHAR':
-                    if ($instruction->args[1]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $value = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $value = $instruction->args[1]->value;
-                        $type = $instruction->args[1]->type;
-                    }
-                    if($type !== "int")
+                    $arg = Argument::getArgData($instruction->args[1], $frameManager);
+                    if($arg->type !== "int")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if($value > 1114112)
+                    if($arg->value < 0 || $arg->value > 1114112)
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_STRING_MANIPULATION_ERROR, "Invalid int value.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, chr($value), "string");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, chr($arg->value), "string");
                     break;
                 case 'STRI2INT':
-                    if ($instruction->args[1]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $value = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $value = $instruction->args[1]->value;
-                        $type = $instruction->args[1]->type;
-                    }
-                    if($type !== "string")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    if($arg1->type !== "string")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if ($instruction->args[2]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $index = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $index = $instruction->args[2]->value;
-                        $type = $instruction->args[2]->type;
-                    }
-                    if($type !== "int")
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if ($index < 0 || $index >= strlen($value))
+                    if ($arg2->value < 0 || $arg2->value >= strlen($arg1->value))
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_STRING_MANIPULATION_ERROR, "Invalid index.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, ord($value[$index]), "int");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, ord($arg1->value[$arg2->value]), "int");
                     break;
                 case 'TYPE':
-                    if ($instruction->args[1]->type === "var") {
-                        $type = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name)->type;
-                    } else {
-                        $type = $instruction->args[1]->type;
-                    }
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $type, "string");
+                    $arg = Argument::getArgData($instruction->args[1], $frameManager);
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg->type, "string");
                     break;
                 case 'ADD':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== "int" || $symb2Type !== "int")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== "int" || $arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value + $symb2Value, "int");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value + $arg2->value, "int");
                     break;
                 case 'SUB':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== "int" || $symb2Type !== "int")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== "int" || $arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value - $symb2Value, "int");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value - $arg2->value, "int");
                     break;
                 case 'MUL':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== "int" || $symb2Type !== "int")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== "int" || $arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value * $symb2Value, "int");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value * $arg2->value, "int");
                     break;
                 case 'IDIV':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== "int" || $symb2Type !== "int")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== "int" || $arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if($symb2Value === 0)
+                    if($arg2->value === 0)
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_INVALID_VALUE, "Division by zero.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value / $symb2Value, "int");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, (int)($arg1->value / $arg2->value), "int");
                     break;
                 case 'LT':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if(($symb1Type !== $symb2Type) || ($symb1Type === "nil" && $symb2Type === "nil"))
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if(($arg1->type !== $arg2->type) || ($arg1->type === "nil" && $arg2->type === "nil"))
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value < $symb2Value, "bool");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value < $arg2->value, "bool");
                     break;
                 case 'GT':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if(($symb1Type !== $symb2Type) || ($symb1Type === "nil" && $symb2Type === "nil"))
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if(($arg1->type !== $arg2->type) || ($arg1->type === "nil" && $arg2->type === "nil"))
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value > $symb2Value, "bool");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value > $arg2->value, "bool");
                     break;
                 case 'EQ':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== $symb2Type) {
-                        if ($symb1Type === "nil" || $symb2Type === "nil")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== $arg2->type){
+                        if ($arg1->type === "nil" || $arg2->type === "nil")
                             $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, "false", "bool");
                         else
                             ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
                     }
-                        $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value == $symb2Value, "bool");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value === $arg2->value, "bool");
                     break;
                 case 'AND':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== "bool" || $symb2Type !== "bool")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== "bool" || $arg2->type !== "bool")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value && $symb2Value, "bool");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value && $arg2->value, "bool");
                     break;
                 case 'OR':
-                    if ($instruction->args[1]->type === "var") {
-                        $symb1 = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symb1Value = $symb1->value;
-                        $symb1Type = $symb1->type;
-                    } else {
-                        $symb1Value = $instruction->args[1]->value;
-                        $symb1Type = $instruction->args[1]->type;
-                    }
-                    if ($instruction->args[2]->type === "var") {
-                        $symb2 = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $symb2Value = $symb2->value;
-                        $symb2Type = $symb2->type;
-                    } else {
-                        $symb2Value = $instruction->args[2]->value;
-                        $symb2Type = $instruction->args[2]->type;
-                    }
-                    if($symb1Type !== "bool" || $symb2Type !== "bool")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg1->type !== "bool" || $arg2->type !== "bool")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $symb1Value || $symb2Value, "bool");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value || $arg2->value, "bool");
                     break;
                 case 'NOT':
-                    $symb = null;
-                    if ($instruction->args[1]->type === "var") {
-                        $symb = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $symbType = $symb->type;
-                        $symblValue = $symb->value;
-                    } else {
-                        $symblValue = $instruction->args[1]->value;
-                        $symbType = $instruction->args[1]->type;
-                    }
-                    if($symbType !== "bool")
+                    $arg = Argument::getArgData($instruction->args[1], $frameManager);
+                    if($arg->type !== "bool")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, !$symblValue, "bool");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, !$arg->value, "bool");
                     break;
                 case 'GETCHAR':
-                    if ($instruction->args[1]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $value = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $value = $instruction->args[1]->value;
-                        $type = $instruction->args[1]->type;
-                    }
-                    if($type !== "string")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    if($arg1->type !== "string")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if ($instruction->args[2]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $index = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $index = $instruction->args[2]->value;
-                        $type = $instruction->args[2]->type;
-                    }
-                    if($type !== "int")
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if($index < 0 || $index >= strlen($value))
+                    if($arg2->value < 0 || $arg2->value >= strlen($arg1->value))
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_STRING_MANIPULATION_ERROR, "Invalid index.", $instruction->order);
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $value[$index], "string");
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value[$arg2->value], "string");
                     break;
                 case 'SETCHAR':
-                    if ($instruction->args[0]->type === "var") {
-                        $value = $frameManager->getFrameVariable($instruction->args[0]->frame, $instruction->args[0]->name)->value;
-                    } else {
-                        $value = $instruction->args[0]->value;
-                    }
-                    if ($instruction->args[1]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[1]->frame, $instruction->args[1]->name);
-                        $index = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $index = $instruction->args[1]->value;
-                        $type = $instruction->args[1]->type;
-                    }
-                    if($type !== "int" || $index < 0)
+                    $arg0 = Argument::getArgData($instruction->args[0], $frameManager);
+                    if($arg0->type !== "string")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if ($instruction->args[2]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[2]->frame, $instruction->args[2]->name);
-                        $char = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $char = $instruction->args[2]->value;
-                        $type = $instruction->args[2]->type;
-                    }
-                    if($type !== "string")
+                    $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
+                    if($arg1->type !== "int" || $arg1->value < 0)
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if($index < 0 || $index >= strlen($value))
+                    $arg2 = Argument::getArgData($instruction->args[2], $frameManager);
+                    if($arg2->type !== "string")
+                        ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    if($arg1->value < 0 || $arg1->value >= strlen($arg0->value))
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_STRING_MANIPULATION_ERROR, "Invalid index.", $instruction->order);
-                    $value[$index] = $char;
-                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $value, "string");
+                    $arg0->value[$arg1->value] = $arg2->value;
+                    $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg0->value, "string");
                     break;
                 case 'DPRINT':
-                    if ($instruction->args[0]->type === "var") {
-                        $value = $frameManager->getFrameVariable($instruction->args[0]->frame, $instruction->args[0]->name)->value;
-                    } else {
-                        $value = $instruction->args[0]->value;
-                    }
-                    echo $value . "\n";
+                    $arg = Argument::getArgData($instruction->args[0], $frameManager);
+                    if($arg->type === "nil")
+                        $arg->value = "";
                     break;
                 case 'BREAK':
                     echo "Instruction: " . $i . "\n";
@@ -538,33 +277,21 @@ trait Program
                     $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $var->value, $var->type);
                     break;
                 case 'PUSHS':
-                    if ($instruction->args[0]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[0]->frame, $instruction->args[0]->name);
-                    } else {
-                        $var = $instruction->args[0];
-                    }
-                    if($var->type === "nil")
-                        $var->value = "";
-                    elseif($var->type === "bool")
-                        $var->value = $var->value ? "true" : "false";
-                    $clonedVar = clone $var;
+                    $arg = Argument::getArgData($instruction->args[0], $frameManager);
+                    if($arg->type === "nil")
+                        $arg->value = "";
+                    elseif($arg->type === "bool")
+                        $arg->value = $arg->value ? "true" : "false";
+                    $clonedVar = clone $arg;
                     $variableStack->push($clonedVar);
                     break;
                 case 'EXIT':
-                    if ($instruction->args[0]->type === "var") {
-                        $var = $frameManager->getFrameVariable($instruction->args[0]->frame, $instruction->args[0]->name);
-                        $value = $var->value;
-                        $type = $var->type;
-                    } else {
-                        $value = $instruction->args[0]->value;
-                        $type = $instruction->args[0]->type;
-                    }
-                    if($type !== "int")
+                    $arg = Argument::getArgData($instruction->args[0], $frameManager);
+                    if($arg->type !== "int")
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    if ($value < 0 || $value > 9)
+                    if ($arg->value < 0 || $arg->value > 49)
                         ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_INVALID_VALUE, "Invalid value.", $instruction->order);
-                    exit($value);
-
+                    exit($arg->value);
                 }
 
             }

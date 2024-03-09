@@ -53,4 +53,13 @@ class Argument
 
         return $str;
     }
+
+    public static function getArgData($arg, $frameManager) {
+        if ($arg->type === "var") {
+            $var = $frameManager->getFrameVariable($arg->frame, $arg->name);
+        } else {
+            $var = $arg;
+        }
+        return $var;
+    }
 }
