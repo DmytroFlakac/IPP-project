@@ -6,7 +6,6 @@ use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\NotImplementedException;
 use IPP\Core\FileInputReader;
 
-
 class Interpreter extends AbstractInterpreter
 {
     use Program;
@@ -21,8 +20,4 @@ class Interpreter extends AbstractInterpreter
         Interpreter::executeInstructions($instructions, $frameManager, $labels, $stdout, $stdin);
         return 0;
     }
-
-
-
 }
-

@@ -14,19 +14,19 @@ namespace IPP\Core;
  */
 abstract class ReturnCode
 {
-    const OK = 0;
-    const PARAMETER_ERROR = 10;
-    const INPUT_FILE_ERROR = 11;
-    const OUTPUT_FILE_ERROR = 12;
-    const INVALID_XML_ERROR = 31;
-    const INVALID_SOURCE_STRUCTURE = 32;
-    const SEMANTIC_ERROR = 52;
-    const OPERAND_TYPE_ERROR = 53;
-    const VARIABLE_ACCESS_ERROR = 54;
-    const FRAME_ACCESS_ERROR = 55;
-    const VALUE_ERROR = 56;
-    const OPERAND_VALUE_ERROR = 57;
-    const STRING_OPERATION_ERROR = 58;
-    const INTEGRATION_ERROR = 88;
-    const INTERNAL_ERROR = 99;
+    const int OK = 0;
+    const int PARAMETER_ERROR = 10;
+    const int INPUT_FILE_ERROR = 11;
+    const int OUTPUT_FILE_ERROR = 12;
+    const int INVALID_XML_ERROR = 31;
+    const int INVALID_SOURCE_STRUCTURE = 32;
+    const int SEMANTIC_ERROR = 52;
+    const int OPERAND_TYPE_ERROR = 53;
+    const int VARIABLE_ACCESS_ERROR = 54;
+    const int FRAME_ACCESS_ERROR = 55;
+    const int VALUE_ERROR = 56;
+    const int OPERAND_VALUE_ERROR = 57;
+    const int STRING_OPERATION_ERROR = 58;
+    const int INTEGRATION_ERROR = 88;
+    const int INTERNAL_ERROR = 99;
 }

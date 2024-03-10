@@ -7,7 +7,7 @@ class Instruction
 {
     public string $opcode;
     public int $order;
-    public ?array $args = null;
+    public array $args;
 
     function __construct($opcode, $order)
     {

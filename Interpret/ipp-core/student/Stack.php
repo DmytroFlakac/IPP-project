@@ -2,24 +2,26 @@
 
 namespace IPP\Student;
 
+use IPP\Core\ReturnCode;
+
 class Stack
 {
-    public array $stack = [];
+    public mixed $stack;
 
     function __construct()
     {
         $this->stack = [];
     }
 
-    public function push($value): void
+    public function push(mixed $value): void
     {
         $this->stack[] = $value;
     }
 
-    public function pop()
+    public function pop(): mixed
     {
         if (count($this->stack) === 0)
-            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_MISSING_VALUE, "Stack is empty.", -1);
+            ErrorHandler::ErrorMessage(ReturnCode::VALUE_ERROR, "Stack is empty.", -1);
         return array_pop($this->stack);
     }
 

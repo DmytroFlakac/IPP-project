@@ -2,6 +2,8 @@
 
 namespace IPP\Student;
 
+use IPP\Core\ReturnCode;
+
 class XMLProcessing
 {
     private \DOMElement $source;
@@ -18,13 +20,13 @@ class XMLProcessing
         $this->xmlVersion = $this->source->ownerDocument->xmlVersion;
     }
 
-    public function validate(): array
+    public function validate(): mixed
     {
         if ($this->encoding !== 'UTF-8' || $this->xmlVersion !== '1.0') {
-            ErrorHandler::ErrorMessage(ErrorHandler::XML_FORMAT_ERROR, "Incorrect XML format.", -1);
+            ErrorHandler::ErrorMessage(ReturnCode::INVALID_XML_ERROR, "Incorrect XML format.", -1);
         }
         if ($this->source->getAttribute('language') !== 'IPPcode23' || $this->source->nodeName !== 'program') {
-            ErrorHandler::ErrorMessage(ErrorHandler::XML_FORMAT_ERROR, "Incorrect XML format.", -1);
+            ErrorHandler::ErrorMessage(ReturnCode::INVALID_XML_ERROR, "Incorrect XML format.", -1);
         }
 
         $instructions = [];
@@ -49,10 +51,10 @@ class XMLProcessing
             foreach ($instNode->childNodes as $argNode) {
                 if ($argNode->nodeType === XML_ELEMENT_NODE) {
                     if (!str_starts_with($argNode->nodeName, 'arg'))
-                        ErrorHandler::ErrorMessage(ErrorHandler::XML_UNEXPECTED_STRUCTURE, "Unexpected node found under instruction.", -1);
+                        ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Unexpected node found under instruction.", -1);
                     $argNum = intval(substr($argNode->nodeName, 3)); // Extracting the number from arg1, arg2, etc.
                     if ($argNum !== ++$argCount) { // Check if args are sequential
-                        ErrorHandler::ErrorMessage(ErrorHandler::XML_FORMAT_ERROR, "Argument order is not sequential.", -1);
+                        ErrorHandler::ErrorMessage(ReturnCode::INVALID_XML_ERROR, "Argument order is not sequential.", -1);
                     }
                     $type = $argNode->getAttribute('type');
                     $value = $argNode->nodeValue;
@@ -62,7 +64,7 @@ class XMLProcessing
             Instruction::addInstruction($instructions, $instruction);
         }
         if (empty($instructions)) {
-            ErrorHandler::ErrorMessage(ErrorHandler::XML_UNEXPECTED_STRUCTURE, "No instructions found.", -1);
+            ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "No instructions found.", -1);
         }
 
         return $instructions;

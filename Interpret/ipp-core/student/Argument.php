@@ -2,36 +2,31 @@
 
 namespace IPP\Student;
 
+use IPP\Core\ReturnCode;
+
 class Argument
 {
-    public $type;
-    public $frame;
-    public $name;
-    public $value;
+    public string|null $type;
+    public string|null $frame;
+    public string|null $name;
+    public string|null|bool|int $value;
 
     public function __construct()
     {
         $this->type = null;
-        $this->value = null;
         $this->frame = null;
         $this->name = null;
+        $this->value = null;
     }
     public function checkType($type): void
     {
         if ($this->type !== $type) {
-            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_TYPE_ERROR, "Nesprávny typ argumentu",-1);
+            ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Nesprávny typ argumentu",-1);
         }
     }
-    public function getValue()
-    {
-        return $this->value;
-    }
-    public function getType()
-    {
-        return $this->type;
-    }
 
-    public function decodeStringArgument($str) {
+    public function decodeStringArgument($str): array|string|null
+    {
         // First, replace common escape sequences
         $replacements = [
             '\\n' => "\n", // New line
@@ -45,13 +40,10 @@ class Argument
             $str = str_replace($search, $replace, $str);
         }
 
-        // Then, handle the numeric escape sequences \xyz
-        $str = preg_replace_callback('/\\\\([0-9]{3})/', function($matches) {
+        return preg_replace_callback('/\\\\([0-9]{3})/', function($matches) {
             // Convert the decimal number to a character
             return chr((int)$matches[1]);
         }, $str);
-
-        return $str;
     }
 
     public static function getArgData($arg, $frameManager) {
@@ -61,5 +53,10 @@ class Argument
             $var = $arg;
         }
         return $var;
+    }
+
+    public static function isCALLorJUMP($opcode): bool
+    {
+        return $opcode === "CALL" || str_contains($opcode, "JUMP");
     }
 }

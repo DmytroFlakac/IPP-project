@@ -2,19 +2,7 @@
 
 namespace IPP\Student;
 
-/**
- * Trait to define a Variable
- */
-trait Variable
-{
-    public string $type;
-    public $value;
-    function __construct()
-    {
-        $this->type = "";
-        $this->value = null;
-    }
-}
+use IPP\Core\ReturnCode;
 
 /**
  * Class Frame
@@ -28,7 +16,7 @@ class Frame
     /**
      * @var Variable[] Array to hold variables of type Variable
      */
-    public $variables;
+    public array $variables;
 
     public function __construct()
     {
@@ -41,7 +29,7 @@ class Frame
             // Note: You need to instantiate a new Variable object here
             $this->variables[$name] = new class { use Variable; };
         } else {
-            ErrorHandler::ErrorMessage(ErrorHandler::SEMANTIC_ERROR, "Duplicate variable found.", -1);
+            ErrorHandler::ErrorMessage(ReturnCode::SEMANTIC_ERROR, "Duplicate variable found.", -1);
         }
     }
     public function getVariable($name)
@@ -49,7 +37,7 @@ class Frame
         if (array_key_exists($name, $this->variables)) {
             return $this->variables[$name];
         }
-        ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_ACCESS_UNDEFINED_VARIABLE, "Undefined variable.", -1);
+        ErrorHandler::ErrorMessage(ReturnCode::VARIABLE_ACCESS_ERROR, "Undefined variable.", -1);
     }
 
     public function setVariable($name, $value, $type): void
@@ -58,7 +46,7 @@ class Frame
             $this->variables[$name]->value = $value;
             $this->variables[$name]->type = $type;
         } else {
-            ErrorHandler::ErrorMessage(ErrorHandler::RUNTIME_ACCESS_UNDEFINED_VARIABLE, "Undefined variable.", -1);
+            ErrorHandler::ErrorMessage(ReturnCode::VARIABLE_ACCESS_ERROR, "Undefined variable.", -1);
         }
     }
 }
