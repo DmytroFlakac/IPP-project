@@ -8,13 +8,13 @@ PASSED=0
 FAILED=0
 
 if [[ -z "$INTERPRET" ]] ; then
-  INTERPRET=../../interpret.py
+  INTERPRET=../interpret.php
 fi
 
 for x in $(find "$PWD" -name '*.src')
 do
   #spuštění interptetu
-  timeout 2 python3 -O "$INTERPRET" --source="$x" --input="${x%.src}.in" > "${x%.src}.my_out"
+  timeout 2 php8.3 "$INTERPRET" --source="$x" --input="${x%.src}.in" > "${x%.src}.my_out"
 
   #uložení návratové hodnoty
   echo $? | tr -d '\n' > "${x%.src}.my_rc"
@@ -27,7 +27,7 @@ do
     diff "${x%.src}.my_out" "${x%.src}.out"
     echo""
     echo "run this test with:"
-    echo "python3 -O $INTERPRET --source=$x --input=${x%.src}.in"
+    echo "php8.3 $INTERPRET --source=$x --input=${x%.src}.in"
     PASS=0
   fi
 
@@ -39,7 +39,7 @@ do
     diff -y -W 20 "${x%.src}.my_rc" "${x%.src}.rc"
     echo""
     echo "run this test with:"
-    echo "python3 -O $INTERPRET --source=$x --input=${x%.src}.in"
+    echo "php8.3 $INTERPRET --source=$x --input=${x%.src}.in"
     PASS=0
   fi
 

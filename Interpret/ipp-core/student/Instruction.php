@@ -1,13 +1,15 @@
 <?php
 
 namespace IPP\Student;
-
+use IPP\Core\ReturnCode;
 
 class Instruction
 {
     public string $opcode;
     public int $order;
     public array $args;
+
+    private array $correctFrame = ["GF", "LF", "TF"];
 
     function __construct($opcode, $order)
     {
@@ -24,6 +26,8 @@ class Instruction
             $parts = explode("@", $value);
             $argument->frame = $parts[0];
             $argument->name = $parts[1];
+            if (!in_array($argument->frame, $this->correctFrame))
+                ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Invalid frame.", $this->order);
         }
         elseif($type === "string")
             $value = $argument->decodeStringArgument($value);
@@ -44,5 +48,21 @@ class Instruction
     public static function addInstruction(&$instructions, $instruction): void
     {
         $instructions[] = $instruction;
+    } 
+
+    public function isInstrCorrect(): bool
+    {
+        if (!array_key_exists($this->opcode, self::$instructions))
+            return false;
+        $correctArgs = self::$instructions[$this->opcode];
+        if (count($correctArgs) !== count($this->args))
+            return false;
+        for ($i = 0; $i < count($correctArgs); $i++) {              
+            if (($correctArgs[$i] !== $this->args[$i]->type) &&
+             !($correctArgs[$i] === "symb" && self::correctSymbol($this->args[$i]->type))) 
+                return false;       
+        }
+        return true;
     }
+   
 }

@@ -106,8 +106,8 @@ Test [25]
 	Reálná hodnota: int
 	OK!
 Test [26]
-	Očekávaná hodnota:
-	Reálná hodnota:
+	Očekávaná hodnota: 
+	Reálná hodnota: 
 	OK!
 Test [27]
 	Očekávaná hodnota: nil

@@ -14,39 +14,37 @@ trait InstructionDictionary
         "RETURN" => [],
         "PUSHS" => ["symb"],
         "POPS" => ["var"],
-        "ADD" => ["var", "symb1", "symb2"],
-        "SUB" => ["var", "symb1", "symb2"],
-        "MUL" => ["var", "symb1", "symb2"],
-        "IDIV" => ["var", "symb1", "symb2"],
-        "LT" => ["var", "symb1", "symb2"],
-        "GT" => ["var", "symb1", "symb2"],
-        "EQ" => ["var", "symb1", "symb2"],
-        "AND" => ["var", "symb1", "symb2"],
-        "OR" => ["var", "symb1", "symb2"],
+        "ADD" => ["var", "symb", "symb"],
+        "SUB" => ["var", "symb", "symb"],
+        "MUL" => ["var", "symb", "symb"],
+        "IDIV" => ["var", "symb", "symb"],
+        "LT" => ["var", "symb", "symb"],
+        "GT" => ["var", "symb", "symb"],
+        "EQ" => ["var", "symb", "symb"],
+        "AND" => ["var", "symb", "symb"],
+        "OR" => ["var", "symb", "symb"],
         "NOT" => ["var", "symb"],
         "INT2CHAR" => ["var", "symb"],
-        "STRI2INT" => ["var", "symb1", "symb2"],
+        "STRI2INT" => ["var", "symb", "symb"],
         "READ" => ["var", "type"],
         "WRITE" => ["symb"],
-        "CONCAT" => ["var", "symb1", "symb2"],
+        "CONCAT" => ["var", "symb", "symb"],
         "STRLEN" => ["var", "symb"],
-        "GETCHAR" => ["var", "symb1", "symb2"],
-        "SETCHAR" => ["var", "symb1", "symb2"],
+        "GETCHAR" => ["var", "symb", "symb"],
+        "SETCHAR" => ["var", "symb", "symb"],
         "TYPE" => ["var", "symb"],
         "LABEL" => ["label"],
         "JUMP" => ["label"],
-        "JUMPIFEQ" => ["label", "symb1", "symb2"],
-        "JUMPIFNEQ" => ["label", "symb1", "symb2"],
+        "JUMPIFEQ" => ["label", "symb", "symb"],
+        "JUMPIFNEQ" => ["label", "symb", "symb"],
         "EXIT" => ["symb"],
         "DPRINT" => ["symb"],
         "BREAK" => []
     ];
 
-    public static function getExpectedArguments(string $key)
+    public static function correctSymbol($type): bool
     {
-        if (array_key_exists($key, self::$instructions)) {
-            return self::$instructions[$key];
-        }
-        return null;
+        return in_array($type, ["var", "int", "bool", "string", "nil"]);
     }
+
 }
