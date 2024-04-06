@@ -18,12 +18,6 @@ class Argument
         $this->name = null;
         $this->value = null;
     }
-    public function checkType($type): void
-    {
-        if ($this->type !== $type) {
-            ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Nesprávny typ argumentu",-1);
-        }
-    }
 
     public function decodeStringArgument($str): array|string|null
     {

@@ -39,7 +39,22 @@ trait InstructionDictionary
         "JUMPIFNEQ" => ["label", "symb", "symb"],
         "EXIT" => ["symb"],
         "DPRINT" => ["symb"],
-        "BREAK" => []
+        "BREAK" => [],
+        "CLEARS" => [],
+        "ADDS" => [],
+        "SUBS" => [],
+        "MULS" => [],
+        "IDIVS" => [],
+        "LTS" => [],
+        "GTS" => [],
+        "EQS" => [],
+        "ANDS" => [],
+        "ORS" => [],
+        "NOTS" => [],
+        "INT2CHARS" => [],
+        "STRI2INTS" => [],
+        "JUMPIFEQS" => ["label"],
+        "JUMPIFNEQS" => ["label"],
     ];
 
     public static function correctSymbol($type): bool

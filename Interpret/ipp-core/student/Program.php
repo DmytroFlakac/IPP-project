@@ -4,9 +4,26 @@ namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
 
-trait Program
+class Program
 {
-    public static function findAllLabels($instructions): array
+    private $instructions;
+    private $frameManager;
+    private $labels;
+    private $stdout;
+    private $stdin;
+    
+
+    function __construct($instructions, $stdout, $stdin){
+        $this->instructions = $instructions;
+        $this->frameManager = new FrameManager();
+        $this->labels = $this->findAllLabels($instructions);
+        $this->stdout = $stdout;
+        $this->stdin = $stdin;
+        $this->executeInstructions($instructions, $this->frameManager, $this->labels, $stdout, $stdin);
+    }
+
+    
+    private function findAllLabels($instructions): array
     {
         $labels = [];
         foreach ($instructions as $instruction) {
@@ -21,7 +38,7 @@ trait Program
         return $labels;
     }
 
-    public static function executeInstructions($instructions, $frameManager, $labels, $stdout, $stdin): void
+    private function executeInstructions($instructions, $frameManager, $labels, $stdout, $stdin): void
     {
         $variableStack = new Stack();
         $pointerStack = new Stack();
@@ -245,15 +262,14 @@ trait Program
                     break;
                 case 'DPRINT':
                     $arg = Argument::getArgData($instruction->args[0], $frameManager);
-                    if($arg->type === "nil")
-                        $arg->value = "";
+                    fwrite(STDERR, $arg->value . PHP_EOL);        
                     break;
                 case 'BREAK':
-                    echo "Instruction: " . $i . "\n";
-                    echo "Global frame: " . json_encode($frameManager->globalFrame) . "\n";
-                    echo "Local frames: " . json_encode($frameManager->localFrames) . "\n";
-                    echo "Temporary frame: " . json_encode($frameManager->temporaryFrame) . "\n";
-                    echo "Variable stack: " . json_encode($variableStack) . "\n";
+                    fwrite(STDERR, "Instruction: " . $i . "\n");
+                    fwrite(STDERR, "Global frame: " . json_encode($frameManager->globalFrame) . "\n");
+                    fwrite(STDERR, "Local frames: " . json_encode($frameManager->localFrames) . "\n");
+                    fwrite(STDERR, "Temporary frame: " . json_encode($frameManager->temporaryFrame) . "\n");
+                    fwrite(STDERR, "Variable stack: " . json_encode($variableStack) . "\n");
                     break;
                 case 'POPS':
                     $var = $variableStack->pop();
@@ -261,12 +277,177 @@ trait Program
                     break;
                 case 'PUSHS':
                     $arg = Argument::getArgData($instruction->args[0], $frameManager);
-                    if($arg->type === "nil")
-                        $arg->value = "";
-                    elseif($arg->type === "bool")
-                        $arg->value = $arg->value ? "true" : "false";
+                    // if($arg->type === "nil")
+                    //     $arg->value = "";
+                    // elseif($arg->type === "bool")
+                    //     $arg->value = $arg->value === true;
                     $clonedVar = clone $arg;
                     $variableStack->push($clonedVar);
+                    break;
+                case 'CLEARS':
+                    $variableStack = new Stack();
+                    break;
+                case 'ADDS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if($arg1->type !== "int" || $arg2->type !== "int")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "int";
+                    $result->value = $arg1->value + $arg2->value;
+                    $variableStack->push($result);
+                    break;
+                case 'SUBS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if($arg1->type !== "int" || $arg2->type !== "int")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "int";
+                    $result->value = $arg1->value - $arg2->value;
+                    $variableStack->push($result);
+                    break;
+                case 'MULS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if($arg1->type !== "int" || $arg2->type !== "int")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "int";
+                    $result->value = $arg1->value * $arg2->value;
+                    $variableStack->push($result);
+                    break;
+                case 'IDIVS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if($arg1->type !== "int" || $arg2->type !== "int")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    if($arg2->value === 0)
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_VALUE_ERROR, "Division by zero.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "int";
+                    $result->value = (int)($arg1->value / $arg2->value);
+                    $variableStack->push($result);
+                    break;
+                case 'LTS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if(($arg1->type !== $arg2->type) || ($arg1->type === "nil" && $arg2->type === "nil"))
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "bool";
+                    $result->value = $arg1->value < $arg2->value;
+                    $variableStack->push($result);
+                    break;
+                case 'GTS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if(($arg1->type !== $arg2->type) || ($arg1->type === "nil" && $arg2->type === "nil"))
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "bool";
+                    $result->value = $arg1->value > $arg2->value;
+                    $variableStack->push($result);
+                    break;
+                case 'EQS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if($arg1->type !== $arg2->type){
+                        if ($arg1->type === "nil" || $arg2->type === "nil"){
+                            $result = new class { use Variable; };
+                            $result->type = "bool";
+                            $result->value = false;
+                            $variableStack->push($result);
+                            break;
+                        }
+                        else
+                            ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    }
+                    $result = new class { use Variable; };
+                    $result->type = "bool";
+                    $result->value = $arg1->value === $arg2->value;
+                    $variableStack->push($result);
+                    break;
+                case 'ANDS':
+                    $arg1 = $variableStack->pop();
+                    $arg2 = $variableStack->pop();
+                    if($arg1->type !== "bool" || $arg2->type !== "bool")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "bool";
+                    $result->value = $arg1->value && $arg2->value;
+                    $variableStack->push($result);
+                    break;
+                case 'ORS':
+                    $arg1 = $variableStack->pop();
+                    $arg2 = $variableStack->pop();
+                    if($arg1->type !== "bool" || $arg2->type !== "bool")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "bool";
+                    $result->value = $arg1->value || $arg2->value;
+                    $variableStack->push($result);
+                    break;
+                case 'NOTS':
+                    $arg = $variableStack->pop();
+                    if($arg->type !== "bool")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "bool";
+                    $result->value = !$arg->value;
+                    $variableStack->push($result);
+                    break;
+                case 'INT2CHARS':
+                    $arg = $variableStack->pop();
+                    if($arg->type !== "int")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    if($arg->value < 0 || $arg->value > 1114112)
+                        ErrorHandler::ErrorMessage(ReturnCode::STRING_OPERATION_ERROR, "Invalid int value.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "string";
+                    $result->value = chr($arg->value);
+                    $variableStack->push($result);
+                    break;
+                case 'STRI2INTS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if($arg1->type !== "string")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);                   
+                    if($arg2->type !== "int")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    if($arg2->value < 0 || $arg2->value >= strlen($arg1->value))
+                        ErrorHandler::ErrorMessage(ReturnCode::STRING_OPERATION_ERROR, "Invalid index.", $instruction->order);
+                    $result = new class { use Variable; };
+                    $result->type = "int";
+                    $result->value = ord($arg1->value[$arg2->value]);
+                    $variableStack->push($result);
+                    break;
+                case 'JUMPIFEQS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if($arg1->type !== $arg2->type) {
+                        if ($arg1->type === "nil" || $arg2->type === "nil"){
+                            break;
+                        }
+                        else
+                            ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);                    
+                    }
+                    if ($arg1->value === $arg2->value)
+                        $i = $labels[$instruction->args[0]->value];
+                    break;
+                case 'JUMPIFNEQS':
+                    $arg2 = $variableStack->pop();
+                    $arg1 = $variableStack->pop();
+                    if($arg1->type !== $arg2->type) {
+                        if ($arg1->type === "nil" || $arg2->type === "nil"){
+                            $i = $labels[$instruction->args[0]->value];
+                            break;
+                        }
+                        else
+                            ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);                    
+                    }
+                    if ($arg1->value !== $arg2->value)
+                        $i = $labels[$instruction->args[0]->value];
                     break;
                 case 'EXIT':
                     $arg = Argument::getArgData($instruction->args[0], $frameManager);

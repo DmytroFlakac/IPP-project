@@ -25,14 +25,13 @@ class XMLProcessing
         if ($this->encoding !== 'UTF-8' || $this->xmlVersion !== '1.0') {
             ErrorHandler::ErrorMessage(ReturnCode::INVALID_XML_ERROR, "Incorrect XML format.", -1);
         }
-        if ($this->source->getAttribute('language') !== 'IPPcode23' || $this->source->nodeName !== 'program') {
+        if ($this->source->getAttribute('language') !== 'IPPcode24' || $this->source->nodeName !== 'program') {
             ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Incorrect XML format.", -1);
         }
 
         $instructions = [];
         if ($this->source->childNodes->length === 0) {
-            // ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "No instructions found.", -1);
-            exit(0);
+            ErrorHandler::ErrorMessage(ReturnCode::OK, "Warning: Empty program.", -1);
         }
 
         
@@ -45,7 +44,7 @@ class XMLProcessing
         foreach ($instructionNodes as $instNode) {
             $order = intval($instNode->getAttribute('order'));
             if ($order < $lastOrder + 1) {
-                ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Instruction order is not sequential.", -1);
+                ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Instruction order is not sequential.", $order);
             }
             $lastOrder = $order;
             $arguments = [];
@@ -56,12 +55,12 @@ class XMLProcessing
                 if ($argNode->nodeType === XML_ELEMENT_NODE && str_starts_with($argNode->nodeName, 'arg')) {
                     $argNum = intval(substr($argNode->nodeName, 3)); // Extract argument number from nodeName
                     if ($argNode->getAttribute('type') === '' || $argNode->nodeValue === null) {
-                        ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Argument type or value is missing.", -1);
+                        ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Argument type or value is missing.", $order);
                     }
                     if ($argNum < 1 || $argNum > 3)
-                        ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Argument number is out of range.", -1);
+                        ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Argument number is out of range.", $order);
                     if(array_key_exists($argNum, $arguments))
-                        ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Argument number is not unique.", -1);
+                        ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Argument number is not unique.", $order);
                     $arguments[$argNum] = ['type' => $argNode->getAttribute('type'), 'value' => trim($argNode->nodeValue)];
                 }
             }
