@@ -2,7 +2,6 @@
 
 namespace IPP\Student;
 
-use IPP\Core\ReturnCode;
 
 class Argument
 {
@@ -35,7 +34,6 @@ class Argument
         }
 
         return preg_replace_callback('/\\\\([0-9]{3})/', function($matches) {
-            // Convert the decimal number to a character
             return chr((int)$matches[1]);
         }, $str);
     }

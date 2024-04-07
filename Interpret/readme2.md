@@ -15,7 +15,7 @@
         - [Composition](#composition)
         - [Class Relationships and Responsibilities](#class-relationships-and-responsibilities)
         - [Practical Use of OOP for Flexibility and Maintenance](#practical-use-of-oop-for-flexibility-and-maintenance)
-   - [Handling Edge Cases and Extensions](#handling-edge-cases-and-extensions)
+   - [Extension: STACK](#extension-stack)
 4. [UML Diagram](#uml-diagram)
 5. [Usage](#usage)
 6. [Summary](#summary)
@@ -64,9 +64,24 @@ Our implementation of the interpret.php script applies several OOP principles di
 #### Practical Use of OOP for Flexibility and Maintenance
 The design choices made, reflected in the structured use of classes and their relationships, enhance the script's flexibility for future expansion. For instance, adding a new instruction type involves creating a new Instruction subclass, minimizing changes to the existing codebase.
 
+### Extension: STACK
+
+A notable enhancement in the `interpret.php` script is the addition of support for stacked instruction variants. This extension broadens the interpreter's functionality, enabling the processing of instructions that interact directly with a data stack, thereby facilitating a more dynamic and adaptable instruction set.
+
+The stacked instruction variants supported include:
+
+- **CLEARS**: Empties the data stack.
+- **ADDS/SUBS/MULS/IDIVS**: Executes arithmetic operations (add, subtract, multiply, integer divide) using the top two elements on the data stack as operands.
+- **LTS/GTS/EQS**: Conducts comparison operations (less than, greater than, equal to) between the top two elements on the data stack.
+- **ANDS/ORS/NOTS**: Performs logical operations (AND, OR, NOT) on the top elements of the data stack.
+- **INT2CHARS/STRI2INTS**: Transforms an integer to a character and a string to an integer, respectively, using the top element of the data stack.
+- **JUMPIFEQS/JUMPIFNEQS**: Executes conditional jumps depending on the equality or inequality of the top two elements on the data stack.
+
+These instructions adhere to the three-address instruction specification, selecting operands from the data stack in reverse order (usually first `⟨symb2⟩` and then `⟨symb1⟩`). This functionality enables succinct expression of complex operations and supports the creation of more intricate IPPcode23 programs through efficient use of the stack for temporary data storage and manipulation.
+
 ## UML Diagram
 
-(A UML class diagram should be included here to illustrate the relationships between the main components. Since this document is in Markdown, you can describe how the diagram is structured or include a link to where the diagram can be viewed.)
+![Class Diagram](https://www.mermaidchart.com/raw/6e74bd31-dd4b-47f2-bc29-d6905da57868?theme=dark&version=v0.1&format=svg)
 
 ## Usage
 

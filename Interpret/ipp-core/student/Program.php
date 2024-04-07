@@ -3,9 +3,6 @@
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use stdClass;
-
-use function PHPSTORM_META\type;
 
 class Program
 {
