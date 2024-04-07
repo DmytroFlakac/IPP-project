@@ -2,11 +2,10 @@
 
 namespace IPP\Student;
 
-trait Variable
+class Variable
 {
     public string $type;
     public int|string|bool|null $value;
-    public int $instructionOrder;
 
     function __construct()
     {

@@ -3,22 +3,20 @@
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
+use stdClass;
+
+use function PHPSTORM_META\type;
 
 class Program
 {
-    private $instructions;
-    private $frameManager;
+    private FrameManager $frameManager;
     private $labels;
-    private $stdout;
-    private $stdin;
+
     
 
     function __construct($instructions, $stdout, $stdin){
-        $this->instructions = $instructions;
         $this->frameManager = new FrameManager();
         $this->labels = $this->findAllLabels($instructions);
-        $this->stdout = $stdout;
-        $this->stdin = $stdin;
         $this->executeInstructions($instructions, $this->frameManager, $this->labels, $stdout, $stdin);
     }
 
@@ -100,13 +98,16 @@ class Program
                     break;
                 case 'WRITE':
                     $arg = Argument::getArgData($instruction->args[0], $frameManager);
-                    if ($arg->type === "nil")
-                        $arg->value = '';
+                    if ($arg->type === "nil" && $arg->value === null)
+                        $stdout->writeString("");
                     elseif ($arg->type === "bool")
-                        $arg->value = $arg->value ? "true" : "false";
-                    if($arg->value === null)
-                        ErrorHandler::ErrorMessage(ReturnCode::VALUE_ERROR, "Missing value.", $instruction->order);
-                    $stdout->writeString($arg->value);
+                        $stdout->writeBool($arg->value);
+                    elseif ($arg->type === "int")
+                        $stdout->writeInt($arg->value);
+                    elseif ($arg->type === "string")
+                        $stdout->writeString($arg->value);
+                    else
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
                     break;
                 case 'CONCAT':
                     $arg1 = Argument::getArgData($instruction->args[1], $frameManager);
@@ -116,18 +117,19 @@ class Program
                     $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $arg1->value . $arg2->value, "string");
                     break;
                 case 'READ':
-                    $value = (string)$stdin->readString();
                     $type = $instruction->args[1]->value;
-                    if($type === "int") {
-                        $value = ($value > 1114112) ? null : (int)$value;
-                        $type = ($value === null) ? "nil" : $type;
-                    }
-                    elseif($type === "bool") {
-                        $value = ($value === "true") ? true : (($value === "false") ? false : null);
-                        $type = ($value === null) ? "nil" : $type;
-                    }
-                    elseif ($type === "nil")
-                        $value = null;
+                    if($type !== "int" && $type !== "bool" && $type !== "string")
+                        ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
+                    elseif($type === "int")
+                        $value = $stdin->readInt();
+                    elseif($type === "bool")
+                        $value = $stdin->readBool();
+                    elseif($type === "string")
+                        $value = $stdin->readString();
+                    if($value === null && $type === "string")
+                        $value = "";
+                    elseif($value === null)
+                        $type = "nil";
                     $frameManager->setVariable2Frame($instruction->args[0]->frame, $instruction->args[0]->name, $value, $type);
                     break;
                 case 'STRLEN':
@@ -277,10 +279,6 @@ class Program
                     break;
                 case 'PUSHS':
                     $arg = Argument::getArgData($instruction->args[0], $frameManager);
-                    // if($arg->type === "nil")
-                    //     $arg->value = "";
-                    // elseif($arg->type === "bool")
-                    //     $arg->value = $arg->value === true;
                     $clonedVar = clone $arg;
                     $variableStack->push($clonedVar);
                     break;
@@ -292,7 +290,7 @@ class Program
                     $arg1 = $variableStack->pop();
                     if($arg1->type !== "int" || $arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "int";
                     $result->value = $arg1->value + $arg2->value;
                     $variableStack->push($result);
@@ -302,7 +300,7 @@ class Program
                     $arg1 = $variableStack->pop();
                     if($arg1->type !== "int" || $arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "int";
                     $result->value = $arg1->value - $arg2->value;
                     $variableStack->push($result);
@@ -312,7 +310,7 @@ class Program
                     $arg1 = $variableStack->pop();
                     if($arg1->type !== "int" || $arg2->type !== "int")
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "int";
                     $result->value = $arg1->value * $arg2->value;
                     $variableStack->push($result);
@@ -324,7 +322,7 @@ class Program
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
                     if($arg2->value === 0)
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_VALUE_ERROR, "Division by zero.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "int";
                     $result->value = (int)($arg1->value / $arg2->value);
                     $variableStack->push($result);
@@ -334,7 +332,7 @@ class Program
                     $arg1 = $variableStack->pop();
                     if(($arg1->type !== $arg2->type) || ($arg1->type === "nil" && $arg2->type === "nil"))
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "bool";
                     $result->value = $arg1->value < $arg2->value;
                     $variableStack->push($result);
@@ -344,7 +342,7 @@ class Program
                     $arg1 = $variableStack->pop();
                     if(($arg1->type !== $arg2->type) || ($arg1->type === "nil" && $arg2->type === "nil"))
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "bool";
                     $result->value = $arg1->value > $arg2->value;
                     $variableStack->push($result);
@@ -354,7 +352,7 @@ class Program
                     $arg1 = $variableStack->pop();
                     if($arg1->type !== $arg2->type){
                         if ($arg1->type === "nil" || $arg2->type === "nil"){
-                            $result = new class { use Variable; };
+                            $result = new Variable();
                             $result->type = "bool";
                             $result->value = false;
                             $variableStack->push($result);
@@ -363,7 +361,7 @@ class Program
                         else
                             ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
                     }
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "bool";
                     $result->value = $arg1->value === $arg2->value;
                     $variableStack->push($result);
@@ -373,7 +371,7 @@ class Program
                     $arg2 = $variableStack->pop();
                     if($arg1->type !== "bool" || $arg2->type !== "bool")
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result =new Variable();
                     $result->type = "bool";
                     $result->value = $arg1->value && $arg2->value;
                     $variableStack->push($result);
@@ -383,7 +381,7 @@ class Program
                     $arg2 = $variableStack->pop();
                     if($arg1->type !== "bool" || $arg2->type !== "bool")
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "bool";
                     $result->value = $arg1->value || $arg2->value;
                     $variableStack->push($result);
@@ -392,7 +390,7 @@ class Program
                     $arg = $variableStack->pop();
                     if($arg->type !== "bool")
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "bool";
                     $result->value = !$arg->value;
                     $variableStack->push($result);
@@ -403,7 +401,7 @@ class Program
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
                     if($arg->value < 0 || $arg->value > 1114112)
                         ErrorHandler::ErrorMessage(ReturnCode::STRING_OPERATION_ERROR, "Invalid int value.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "string";
                     $result->value = chr($arg->value);
                     $variableStack->push($result);
@@ -417,7 +415,7 @@ class Program
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
                     if($arg2->value < 0 || $arg2->value >= strlen($arg1->value))
                         ErrorHandler::ErrorMessage(ReturnCode::STRING_OPERATION_ERROR, "Invalid index.", $instruction->order);
-                    $result = new class { use Variable; };
+                    $result = new Variable();
                     $result->type = "int";
                     $result->value = ord($arg1->value[$arg2->value]);
                     $variableStack->push($result);
