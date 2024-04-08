@@ -25,7 +25,7 @@
 This document serves as a comprehensive guide on the implementation of the `interpret.php` script. It outlines the design philosophy, internal data representations, methodologies for solving specific problems including edge cases, and the implementation of extensions.
 
 ## Program Description
-The interpret.php script is designed as an interpreter for    IPPcode23, a fictional programming language devised for the purposes of this project. The script takes XML-formatted input representing IPPcode23 programs and executes them, emulating the behavior of a hypothetical IPPcode23 machine. Here's an overview of the script's functionalities:
+The interpret.php script is designed as an interpreter for    IPPcode24, a fictional programming language devised for the purposes of this project. The script takes XML-formatted input representing IPPcode23 programs and executes them, emulating the behavior of a hypothetical IPPcode23 machine. Here's an overview of the script's functionalities:
 
 - **XML** Parsing: The script begins by parsing an XML file, which contains the IPPcode23 program. This XML file adheres to a specific schema that represents various program instructions and their associated arguments.
 
