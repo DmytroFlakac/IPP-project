@@ -25,19 +25,19 @@
 This document serves as a comprehensive guide on the implementation of the `interpret.php` script. It outlines the design philosophy, internal data representations, methodologies for solving specific problems including edge cases, and the implementation of extensions.
 
 ## Program Description
-The interpret.php script is designed as an interpreter for    IPPcode24, a fictional programming language devised for the purposes of this project. The script takes XML-formatted input representing IPPcode23 programs and executes them, emulating the behavior of a hypothetical IPPcode23 machine. Here's an overview of the script's functionalities:
+The interpret.php script is designed as an interpreter for    IPPcode24, a fictional programming language devised for the purposes of this project. The script takes XML-formatted input representing IPPcode24 programs and executes them, emulating the behavior of a hypothetical IPPcode24 machine. Here's an overview of the script's functionalities:
 
-- **XML** Parsing: The script begins by parsing an XML file, which contains the IPPcode23 program. This XML file adheres to a specific schema that represents various program instructions and their associated arguments.
+- **XML** Parsing: The script begins by parsing an XML file, which contains the IPPcode24 program. This XML file adheres to a specific schema that represents various program instructions and their associated arguments.
 
 - **Instruction Interpretation:** After parsing, the script interprets each instruction sequentially. Instructions include operations such as arithmetic calculations, logic operations, variable manipulation, and program control flows (e.g., jumps, branches).
 
 - **Variable and Frame Management:** The interpreter manages variables within three types of frames: Global Frame (GF), Local Frame (LF), and Temporary Frame (TF). Frame.php and FrameManager.php handle the scoping and lifetimes of these variables, supporting the script's ability to execute complex programs that require dynamic memory management.
 
-- **Execution Control:** Control flow instructions alter the execution sequence based on conditions or explicitly specified jumps. This allows the execution of loops, conditional statements, and function calls, making the interpreter capable of running non-linear IPPcode23 programs.
+- **Execution Control:** Control flow instructions alter the execution sequence based on conditions or explicitly specified jumps. This allows the execution of loops, conditional statements, and function calls, making the interpreter capable of running non-linear IPPcode24 programs.
 
 - **Runtime Error Handling:** Throughout its execution, the script robustly handles runtime errors, such as undefined variables, type mismatches, and invalid instructions, ensuring that execution errors are reported clearly.
 
-- **Output:** Depending on the program's logic and instructions, the script can modify data, perform computations, and produce output based on the interpreted IPPcode23 instructions.
+- **Output:** Depending on the program's logic and instructions, the script can modify data, perform computations, and produce output based on the interpreted IPPcode24 instructions.
 
 ## Implementation Details
 
@@ -77,7 +77,7 @@ The stacked instruction variants supported include:
 - **INT2CHARS/STRI2INTS**: Transforms an integer to a character and a string to an integer, respectively, using the top element of the data stack.
 - **JUMPIFEQS/JUMPIFNEQS**: Executes conditional jumps depending on the equality or inequality of the top two elements on the data stack.
 
-These instructions adhere to the three-address instruction specification, selecting operands from the data stack in reverse order (usually first `⟨symb2⟩` and then `⟨symb1⟩`). This functionality enables succinct expression of complex operations and supports the creation of more intricate IPPcode23 programs through efficient use of the stack for temporary data storage and manipulation.
+These instructions adhere to the three-address instruction specification, selecting operands from the data stack in reverse order (usually first `⟨symb2⟩` and then `⟨symb1⟩`). This functionality enables succinct expression of complex operations and supports the creation of more intricate IPPcode24 programs through efficient use of the stack for temporary data storage and manipulation.
 
 ## UML Diagram
 
@@ -92,4 +92,4 @@ php interpret.php --source=file.xml [--input=file.in]
 ```
 ## Summary
 
-The `interpret.php` script is a sophisticated interpreter designed to execute programs written in IPPcode23, a conceptual programming language created specifically for educational purposes. Through the adept application of Object-Oriented Programming (OOP) principles, the script provides a robust and flexible framework for parsing XML input, interpreting and executing instructions, managing variable scopes, and handling runtime errors efficiently. This implementation not only demonstrates the practical application of complex programming concepts but also serves as a foundational tool for understanding interpreter design and operation. With its structured approach to handling the intricacies of programming language interpretation, `interpret.php` stands as a testament to the power of OOP in building scalable, maintainable, and efficient software solutions.
+The `interpret.php` script is a sophisticated interpreter designed to execute programs written in IPPcode24, a conceptual programming language created specifically for educational purposes. Through the adept application of Object-Oriented Programming (OOP) principles, the script provides a robust and flexible framework for parsing XML input, interpreting and executing instructions, managing variable scopes, and handling runtime errors efficiently. This implementation not only demonstrates the practical application of complex programming concepts but also serves as a foundational tool for understanding interpreter design and operation. With its structured approach to handling the intricacies of programming language interpretation, `interpret.php` stands as a testament to the power of OOP in building scalable, maintainable, and efficient software solutions.
