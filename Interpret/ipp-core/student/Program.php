@@ -115,6 +115,7 @@ class Program
                     break;
                 case 'READ':
                     $type = $instruction->args[1]->value;
+                    $value = null;
                     if($type !== "int" && $type !== "bool" && $type !== "string")
                         ErrorHandler::ErrorMessage(ReturnCode::OPERAND_TYPE_ERROR, "Invalid type.", $instruction->order);
                     elseif($type === "int")

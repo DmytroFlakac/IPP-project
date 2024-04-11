@@ -34,6 +34,7 @@ class Frame
             return $this->variables[$name];
         }
         ErrorHandler::ErrorMessage(ReturnCode::VARIABLE_ACCESS_ERROR, "Undefined variable.", -1);
+        return new Variable();
     }
 
     public function setVariable($name, $value, $type): void
