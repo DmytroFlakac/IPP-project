@@ -43,7 +43,7 @@ class XMLProcessing
         $lastOrder = 0;
         foreach ($instructionNodes as $instNode) {
             $order = intval($instNode->getAttribute('order'));
-            if ($order < $lastOrder + 1) {
+            if ($order < 0 || $order === $lastOrder) {
                 ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Instruction order is not sequential.", $order);
             }
             $lastOrder = $order;
@@ -66,6 +66,13 @@ class XMLProcessing
             }
         
             ksort($arguments);
+            $expectedArgNum = 1;
+            foreach (array_keys($arguments) as $argNum) {
+                if ($argNum !== $expectedArgNum) {
+                    ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Arguments must be in sorted order (arg1, arg2, arg3).", $order);
+                }
+                $expectedArgNum++;
+            }
             foreach ($arguments as $argNum => $argData) {
                 $instruction->addArgument($argData['type'], $argData['value']);
             }
@@ -73,6 +80,6 @@ class XMLProcessing
                 ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Invalid instruction structure.", $order);
             Instruction::addInstruction($instructions, $instruction);
         }
-        return $instructions;
+        return Instruction::SortByOrder($instructions);
     }
 }

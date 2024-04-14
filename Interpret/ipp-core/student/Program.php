@@ -27,7 +27,7 @@ class Program
                 if (array_key_exists($label, $labels)) {
                     ErrorHandler::ErrorMessage(ReturnCode::SEMANTIC_ERROR, "Duplicate label found.", $instruction->order);
                 }
-                $labels[$label] = $instruction->order-1;
+                $labels[$label] = $instruction->executedOrder-1;
             }
         }
         return $labels;

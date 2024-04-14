@@ -4,7 +4,7 @@
 #
 
 # Unlike Merlin, dev-container with VSC gives username as "vscode", so change LOGIN to your login explicitly (be aware of no additional spaces)
-LOGIN=$(USER)
+LOGIN=xtrifo00
 TEMP_DIR=temp
 TASK=2
 STUDENT_DIR=student

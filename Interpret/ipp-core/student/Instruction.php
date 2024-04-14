@@ -7,6 +7,9 @@ class Instruction
 {
     public string $opcode;
     public int $order;
+
+    public int $executedOrder = 0;
+
     public array $args;
 
     private array $correctFrame = ["GF", "LF", "TF"];
@@ -32,9 +35,15 @@ class Instruction
         elseif($type === "string")
             $value = $argument->decodeStringArgument($value);
         elseif ($type === "int")
-            $value = (int)$value;
+            if(!is_numeric($value))
+                ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Invalid argument value.", $this->order);
+            else
+                $value = (int)$value;
         elseif ($type === "bool")
-            $value = $value === "true";
+            if($value !== "true" && $value !== "false")
+                ErrorHandler::ErrorMessage(ReturnCode::INVALID_SOURCE_STRUCTURE, "Invalid argument value.", $this->order);
+            else
+                $value = $value === "true";
         elseif ($type === "nil")
             $value = null;
 
@@ -63,6 +72,36 @@ class Instruction
                 return false;       
         }
         return true;
+    }
+
+    public static function SortByOrder($Instructions): array
+    {
+        usort($Instructions, function ($a, $b) {
+            return $a->order - $b->order;
+        });
+        
+        $newOrder = 1;
+        foreach ($Instructions as $instruction) {
+            $instruction->executedOrder = $newOrder;
+            $newOrder++;
+        }
+        return $Instructions;
+    
+    }
+
+    public static function PrintInstructions($instructions): void
+    {
+        foreach ($instructions as $instruction) {
+            echo "Opcode: {$instruction->opcode}, Order: {$instruction->order} ExecuteOrder: " . PHP_EOL;
+            echo "Arguments:" . PHP_EOL;
+            foreach ($instruction->args as $argument) {
+                echo "  Type: {$argument->type}, Value: {$argument->value}" . PHP_EOL;
+                if ($argument->type === "var") {
+                    echo "    Frame: {$argument->frame}, Name: {$argument->name}" . PHP_EOL;
+                }
+            }
+            echo PHP_EOL;
+        }
     }
    
 }
