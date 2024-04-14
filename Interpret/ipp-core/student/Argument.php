@@ -18,7 +18,11 @@ class Argument
         $this->value = null;
     }
 
-    public function decodeStringArgument($str): array|string|null
+    /**
+     * @param string $str
+     * @return string
+     */
+    public function decodeStringArgument($str): string
     {
         // First, replace common escape sequences
         $replacements = [
@@ -38,6 +42,11 @@ class Argument
         }, $str);
     }
 
+    /**
+     * @param Argument $arg
+     * @param FrameManager $frameManager
+     * @return mixed
+     */
     public static function getArgData($arg, $frameManager) {
         if ($arg->type === "var") {
             $var = $frameManager->getFrameVariable($arg->frame, $arg->name);
@@ -47,7 +56,11 @@ class Argument
         return $var;
     }
 
-    public static function isCALLorJUMP($opcode): bool
+    /**
+     * @param string $opcode
+     * @return bool
+     */
+    public static function isCALLorJUMP($opcode)
     {
         return $opcode === "CALL" || str_contains($opcode, "JUMP");
     }

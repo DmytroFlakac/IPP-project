@@ -11,14 +11,19 @@ use IPP\Core\ReturnCode;
  */
 class Frame
 {
-    public array $variables;
+    /** @var array<Variable> */
+    public $variables;
 
     public function __construct()
     {
         $this->variables = [];
     }
 
-    public function addVariable($name): void
+    /**
+     * @param string $name
+     * @return void
+     */
+    public function addVariable($name)
     {
         if (!array_key_exists($name, $this->variables)) {
             // Note: You need to instantiate a new Variable object here
@@ -28,7 +33,12 @@ class Frame
             ErrorHandler::ErrorMessage(ReturnCode::SEMANTIC_ERROR, "Duplicate variable found.", -1);
         
     }
-    public function getVariable($name): Variable
+
+    /**
+     * @param string $name
+     * @return Variable
+     */
+    public function getVariable($name)
     {
         if (array_key_exists($name, $this->variables)) {
             return $this->variables[$name];
@@ -37,7 +47,13 @@ class Frame
         return new Variable();
     }
 
-    public function setVariable($name, $value, $type): void
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @param string $type
+     * @return void
+     */
+    public function setVariable($name, $value, $type)
     {
         if (array_key_exists($name, $this->variables)) {
             $this->variables[$name]->value = $value;

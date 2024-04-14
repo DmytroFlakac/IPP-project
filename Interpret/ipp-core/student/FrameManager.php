@@ -7,7 +7,9 @@ use IPP\Core\ReturnCode;
 class FrameManager
 {
     public Frame $globalFrame;
-    public array $localFrames;
+
+    /** @var array<Frame> */
+    public $localFrames;
     public Frame|null $temporaryFrame;
 
     function __construct()
@@ -17,12 +19,20 @@ class FrameManager
         $this->temporaryFrame = null;
     }
 
-    public function createTemporaryFrame(): void
+    /**
+     * @return void
+     */
+    public function createTemporaryFrame()
     {
         $this->temporaryFrame = new Frame();
     }
 
-    public function addVariable2Frame($frame, $name): void
+    /**
+     * @param string $frame
+     * @param string $name
+     * @return void
+     */
+    public function addVariable2Frame($frame, $name)
     {
         if ($frame === "GF") {
             $this->globalFrame->addVariable($name);
@@ -37,6 +47,11 @@ class FrameManager
         } 
     }
 
+    /**
+     * @param string $frame
+     * @param string $name
+     * @return mixed
+     */
     public function getFrameVariable($frame, $name)
     {
         if ($frame === "GF") {
@@ -52,6 +67,13 @@ class FrameManager
         } 
     }
 
+    /**
+     * @param string $frame
+     * @param string $name
+     * @param mixed $value
+     * @param string $type
+     * @return void
+     */
     public function setVariable2Frame($frame, $name, $value, $type): void
     {
         if ($frame === "GF") {
@@ -66,7 +88,10 @@ class FrameManager
             $this->temporaryFrame->setVariable($name, $value, $type);
         } 
     }
-    public function pushTemporaryFrame(): void
+    /**
+     * @return void
+     */
+    public function pushTemporaryFrame()
     {
         if(empty($this->localFrames))
             $this->localFrames[] = new Frame();
@@ -77,7 +102,10 @@ class FrameManager
             ErrorHandler::ErrorMessage(ReturnCode::FRAME_ACCESS_ERROR, "undefined frame", -1);
     }
 
-    public function popTemporaryFrame(): void
+    /**
+     * @return void
+     */
+    public function popTemporaryFrame()
     {
         if (!empty($this->localFrames)) {
             $this->temporaryFrame = array_pop($this->localFrames);

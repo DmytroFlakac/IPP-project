@@ -4,7 +4,10 @@ namespace IPP\Student;
 
 trait InstructionDictionary
 {
-    public static array $instructions = [
+     /**
+     * @var array<string, array<string>> Maps opcode names to their parameter types.
+     */
+    public static $instructions = [
         "MOVE" => ["var", "symb"],
         "CREATEFRAME" => [],
         "PUSHFRAME" => [],
@@ -57,7 +60,11 @@ trait InstructionDictionary
         "JUMPIFNEQS" => ["label"],
     ];
 
-    public static function correctSymbol($type): bool
+    /**
+     * @param string $type
+     * @return bool
+     */
+    public static function correctSymbol($type)
     {
         return in_array($type, ["var", "int", "bool", "string", "nil"]);
     }

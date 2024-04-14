@@ -5,15 +5,22 @@ use IPP\Core\ReturnCode;
 
 class Instruction
 {
+    use InstructionDictionary;
     public string $opcode;
     public int $order;
 
     public int $executedOrder = 0;
 
+    /** @var array<Argument> */
     public array $args;
 
-    private array $correctFrame = ["GF", "LF", "TF"];
+    /** @var array<string> */
+    private  $correctFrame = ["GF", "LF", "TF"];
 
+    /**
+     * @param string $opcode
+     * @param int $order
+     */
     function __construct($opcode, $order)
     {
         $this->opcode = $opcode;
@@ -21,7 +28,12 @@ class Instruction
         $this->args = [];
     }
 
-    public function addArgument($type, $value): void
+    /**
+     * @param string $type
+     * @param string $value
+     * @return void
+     */
+    public function addArgument($type, $value)
     {
         $argument = new Argument();
         $argument->type = $type;
@@ -52,14 +64,21 @@ class Instruction
     }
 
         
-    use InstructionDictionary;
-
-    public static function addInstruction(&$instructions, $instruction): void
+  
+    /**
+     * @param array<Instruction> $instructions
+     * @param Instruction $instruction
+     * @return void
+     */
+    public static function addInstruction(&$instructions, $instruction)
     {
         $instructions[] = $instruction;
     } 
 
-    public function isInstrCorrect(): bool
+    /**
+     * @return bool
+     */
+    public function isInstrCorrect()
     {
         if (!array_key_exists($this->opcode, self::$instructions))
             return false;
@@ -74,7 +93,11 @@ class Instruction
         return true;
     }
 
-    public static function SortByOrder($Instructions): array
+    /**
+     * @param array<Instruction> $Instructions
+     * @return array<Instruction>
+     */
+    public static function SortByOrder($Instructions)
     {
         usort($Instructions, function ($a, $b) {
             return $a->order - $b->order;
@@ -89,7 +112,11 @@ class Instruction
     
     }
 
-    public static function PrintInstructions($instructions): void
+    /**
+     * @param array<Instruction> $instructions
+     * @return void
+     */
+    public static function PrintInstructions($instructions)
     {
         foreach ($instructions as $instruction) {
             echo "Opcode: {$instruction->opcode}, Order: {$instruction->order} ExecuteOrder: " . PHP_EOL;

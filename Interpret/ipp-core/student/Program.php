@@ -3,23 +3,35 @@
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
+use \IPP\Core\Interface\OutputWriter;
+use \IPP\Core\Interface\InputReader;
 
 class Program
 {
     private FrameManager $frameManager;
-    private $labels;
+    /**
+     * @var array<string, int> Labels with their respective orders
+     */
+    private array $labels;
 
-    
-
-    function __construct($instructions, $stdout, $stdin){
+    /**
+     * Program constructor.
+     * @param mixed $instructions Array of Instruction objects
+     * @param OutputWriter $stdout OutputWriter object
+     * @param InputReader $stdin InputReader object
+     */
+    function __construct($instructions,$stdout, $stdin){
         $this->frameManager = new FrameManager();
         $this->labels = $this->findAllLabels($instructions);
         $this->executeInstructions($instructions, $this->frameManager, $this->labels, $stdout, $stdin);
     }
 
-    
-    private function findAllLabels($instructions): array
-    {
+    /**
+     * Finds all labels in the given instructions.
+     * @param mixed $instructions Array of Instruction objects
+     * @return array<string, int> Associative array of label names to their orders
+     */
+    private function findAllLabels( $instructions) {
         $labels = [];
         foreach ($instructions as $instruction) {
             if ($instruction->opcode === 'LABEL') {
@@ -27,13 +39,22 @@ class Program
                 if (array_key_exists($label, $labels)) {
                     ErrorHandler::ErrorMessage(ReturnCode::SEMANTIC_ERROR, "Duplicate label found.", $instruction->order);
                 }
-                $labels[$label] = $instruction->executedOrder-1;
+                $labels[$label] = $instruction->executedOrder - 1;
             }
         }
         return $labels;
     }
-
-    private function executeInstructions($instructions, $frameManager, $labels, $stdout, $stdin): void
+    
+    /**
+     * Executes the given instructions.
+     * @param mixed $instructions Array of Instruction objects
+     * @param FrameManager $frameManager FrameManager object
+     * @param array<string, int> $labels Associative array of label names to their orders
+     * @param OutputWriter $stdout OutputWriter object
+     * @param InputReader $stdin InputReader object
+     * @return void
+     */
+    private function executeInstructions($instructions, $frameManager, $labels, $stdout, $stdin)
     {
         $variableStack = new Stack();
         $pointerStack = new Stack();
